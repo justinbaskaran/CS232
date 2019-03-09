@@ -5,6 +5,7 @@
 NumFiles=0
 
 clean_files () {
+shopt -s dotglob
 DIR=$1/*
 Inter=""
 Quiet=""
