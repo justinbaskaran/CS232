@@ -1,0 +1,984 @@
+Script started on Wed 27 Feb 2019 01:29:52 AM EST
+]0;justin@crappydesktop: ~/Documents/CS232/CS232/Project1.5[01;32mjustin@crappydesktop[00m:[01;34m~/Documents/CS232/CS232/Projectt1.5[00m$ ls
+CLIController.cpp   MenuView.cpp
+CLIView.cpp         [0m[01;32mNanoTimer.h[0m
+commonView.h        parseCLI.h
+main.cpp            processData.cpp
+Makefile            typescript
+MenuController.cpp
+]0;justin@crappydesktop: ~/Documents/CS232/CS232/Project1.5[01;32mjustin@crappydesktop[00m:[01;34m~/Documents/CS232/CS232/Projectt1.5[00m$ cat *.cipp[K[K[Kpp
+#ifndef __CLIVIEWCONTROLLER_H__
+#define __CLIVIEWCONTROLLER_H__
+
+#include <iostream> 
+#include <string>
+#include <list>
+#include "processData.cpp"
+#include <unistd.h>
+#include <pthread.h>
+#include "CLIView.cpp"
+#include "parseCLI.h"
+
+
+using namespace std; 
+
+
+class CLIController : public parseCLI{
+    
+
+
+
+
+
+   public:void executeCLI() 
+    {
+        //cout << "Number Repetitions: " << parseCLI::repetitions;
+        if (parseCLI::repetitions > 1)
+        {  
+            
+            /*
+                Deals when you have the -p/-process switches with the -rN when N is greater then one
+                returns to the view the average time 
+            */
+            if (parseCLI::process) {
+          
+                CLIView cp;
+                processData pd;
+
+                cp.printAverageProcesses(pd.createProcess(parseCLI::repetitions));
+   
+            }
+            /*
+                Deals when you have the -t/-thread switches with the -rN when N is greater then one
+                returns to the view the average time 
+            */
+            if (parseCLI::thread) {
+                CLIView cp;
+                processData pd;
+
+                cp.printAverageThreads(pd.createThreads(parseCLI::repetitions));
+   
+            }
+
+            
+        } else {
+            /*
+                Deals when you have the -p/-process switches with the -rN when N is equal to one or no N present
+                returns to the view the average time 
+            */
+            if (parseCLI::process) {
+       
+                CLIView cp;
+                processData pd;
+
+                cp.printAverageProcesses(pd.createProcess(1));
+
+                    
+            }
+            /*
+                Deals when you have the -t/-thread switches with the -rN when N is equal to one or no N present
+                returns to the view the average time 
+            */
+            if (parseCLI::thread) {
+                CLIView cp;
+                processData pd;
+
+                cp.printAverageThreads(pd.createThreads(1));
+            }
+        }
+    }
+
+ 
+};
+
+
+#endif
+
+
+    
+#ifndef __CLIVIEW_H__
+#define __CLIVIEW_H__
+
+
+#include <iostream> 
+#include <string>
+#include <list>
+#include <unistd.h>
+#include <pthread.h>
+#include "commonView.h"
+
+
+using namespace std; 
+
+ // Simply inherit the parent view 
+class CLIView: public commonView{
+
+
+};
+
+#endif
+
+
+ #include <iostream> 
+#include <string>
+#include <unistd.h>
+#include "MenuController.cpp"
+
+#include "CLIController.cpp"
+
+#include "NanoTimer.h"
+
+
+
+/*
+Input: argc, argument count, total amount of arguments
+       argv, argument variables, list of arguments
+Output: 0
+Description: The main function will process the command line switches, and send the correct repetetion count
+            signals to the correct methods..
+*/
+
+using namespace std; 
+
+
+
+
+int main(int argc, char* argv[]) 
+{  
+    for (int i = 0; i < argc; i++)  {
+        string example = argv[i];
+        if (example == "-cl"){
+            CLIController controller;
+            controller.paseCommands(argc,argv);
+            controller.executeCLI();
+            return 0;
+        } 
+    }
+    MenuController controller;
+    controller.getFlags();
+    return 0; 
+};
+
+/*********************************/
+
+
+
+
+
+/***********************************/
+
+
+
+#include <iostream>
+#include "MenuView.cpp"
+#include <string>
+#include <sstream>
+#include <bits/stdc++.h> 
+#include "parseCLI.h"
+#include <vector>
+#include <sstream>
+
+class MenuController : public parseCLI{
+
+
+    //////////////////////////////////
+    // Input: NULL
+    // Purpose: gets I/O from menu based view
+    // Output: returns the flags parsed to the execute method 
+    ////////////////////////////////
+
+    public:void getFlags(){
+     
+        MenuView mv;
+        string test;
+        test =  mv.printWelcomeMessage();
+       // cout << test;
+
+        std::vector<std::string> v;
+
+        split( test, v, ' ' );
+
+        char* a[v.size()];
+
+
+        bool processes= false;
+        bool threads = false;
+        int repetitions = 1;
+
+
+
+        for (int i=0;i<v.size();i++)
+        {
+             /*
+                handle the -p/-process flags
+            */
+            if (v[i] == "-p")
+            {
+                processes = true;
+            } else if (v[i] == "-t")
+            {
+                threads = true;
+            } else if (v[i].find("-r") == 0) {
+                 /*
+                handle the -rN flag, parse the -rN for the N...
+                */
+                string example = v[i];
+                example.erase(example.begin(),example.begin()+2);
+                string rNum = example;
+                if (rNum != ""){
+                    repetitions = stoi(rNum);
+                    
+                }
+                
+            } 
+
+        }
+        //cout << "Repetitions: "<<repetitions;
+        executeMenu(processes,threads,repetitions);
+
+    }
+    ///Input: string1, string 2
+    // Purpose: parse a given string by space
+    // Output: outputs a vector array of strings 
+    size_t split(const std::string &txt, std::vector<std::string> &strs, char ch)
+    {
+        size_t pos = txt.find( ch );
+        size_t initialPos = 0;
+        strs.clear();
+
+        // Decompose statement
+        while( pos != std::string::npos ) {
+            strs.push_back( txt.substr( initialPos, pos - initialPos ) );
+            initialPos = pos + 1;
+
+            pos = txt.find( ch, initialPos );
+        }
+
+        // Add the last one
+        strs.push_back( txt.substr( initialPos, std::min( pos, txt.size() ) - initialPos + 1 ) );
+
+        return strs.size();
+    }
+
+    // Input: flags for processes, thread, and # of repetitions
+    // Purpose: processing flags to executions
+    // Output: null, starts fetching of data 
+    public:void executeMenu(bool process,bool thread, int repetitions) 
+    {
+
+        if (repetitions > 1)
+        {  
+            
+            /*
+                Deals when you have the -p/-process switches with the -rN when N is greater then one
+                returns to the view the average time 
+            */
+            if (process) {
+          
+                MenuView cp;
+                processData pd;
+
+                cp.printAverageProcesses(pd.createProcess(repetitions));
+   
+            }
+            /*
+                Deals when you have the -t/-thread switches with the -rN when N is greater then one
+                returns to the view the average time 
+            */
+            if (thread) {
+                MenuView cp;
+                processData pd;
+
+                cp.printAverageThreads(pd.createThreads(repetitions));
+   
+            }
+
+            
+        } else {
+            /*
+                Deals when you have the -p/-process switches with the -rN when N is equal to one or no N present
+                returns to the view the average time 
+            */
+            if (process) {
+       
+                MenuView cp;
+                processData pd;
+
+                cp.printAverageProcesses(pd.createProcess(1));
+
+                    
+            }
+            /*
+                Deals when you have the -t/-thread switches with the -rN when N is equal to one or no N present
+                returns to the view the average time 
+            */
+            if (thread) {
+                MenuView cp;
+                processData pd;
+
+                cp.printAverageThreads(pd.createThreads(1));
+            }
+        }
+    }
+    
+};#include <iostream>
+#include "CLIController.cpp"
+#include <string>
+#include <sstream>
+#include <bits/stdc++.h> 
+#include "commonView.h"
+
+using namespace std;
+
+class MenuView: public commonView{
+
+    // Command Line Menu Asks for user input, and does accordingly 
+    public:string printWelcomeMessage(){
+        string a="";
+        cout << "\n" << "Welcome to the Menu Version of this app!";
+        cout << "\n" << "Please choose from the following options: (please enter y or n ";
+        cout << "\n" << "1.Would you like to spawn a Thread? ";
+        string choice1;
+        cin >> choice1;
+        if(choice1 == "y"){
+            a.append("-t ");
+        } 
+
+
+
+        cout << "\n" << "2.Would you like to spawn a Process? ";
+        string choice2;
+        cin >> choice2;
+        if(choice2 == "y"){
+            a.append("-p ");
+        }
+
+
+
+        cout << "\n" << "How many Times? ";
+        string repetitions;
+        cin >> repetitions;
+        string rN = "-r" + repetitions;
+        char *cstr = new char[rN.length() + 1];
+        strcpy(cstr, rN.c_str());
+        a.append(cstr);
+        a.append(" ");
+    
+        return a;
+
+    }
+
+
+
+
+
+};
+
+#ifndef __PROCESSDATA_H__
+#define __PROCESSDATA_H__
+
+#include <iostream> 
+#include <string>
+#include "NanoTimer.h"
+#include <unistd.h>
+#include <list>
+#include <sys/wait.h>
+#include <pthread.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <sys/syscall.h>
+
+
+using namespace std; 
+
+
+class processData 
+{ 
+
+/*
+Input: repetitions, default value is 1, unless -rN is specified in the command line arguments
+Output: average time, which is total time divided by total repetitions
+Description: creates as many processes as specified by the input parameter
+*/
+public:string createProcess(int repetitions){
+    double total=0.000000000000;
+    
+    // NanoTimer class provided by Dr.Adams, in project specifications
+    NanoTimer nt;
+  
+    int run;
+    for (run=0; run<repetitions; run++)
+    {  
+        // Starts Timer
+        nt.start();
+
+        // Fork command sent
+        pid_t pid = fork();
+
+        // Stops Timer
+        nt.stop();
+
+        // Adds current Timer value to total 
+        total = total +  nt.asDouble();
+
+        // Resets Timer 
+        nt.reset();
+
+        // If pid value of fork() is greater then 0, then fork failed!
+        if (pid <0)
+        {
+            // CLIView view = new CLIView();
+            // view.printProcessFailed();
+        }
+
+        // if pid of fork() is 0 then fork is a child!
+        if (pid == 0)
+        {
+        
+            cout<< "\n"<< "Hello From Child Process(PID = "<< getpid() << ")" << "\n";
+           
+            // Exits current child process
+            exit(0);
+           
+            
+
+        }
+        sleep(1);
+
+    } 
+
+    // get rid of the exited processes from the system 
+    while(wait(&run)>=0); 
+
+    // return total summation of times divided by total repetitions
+    sleep(1);
+    return to_string(total/repetitions);
+
+}
+/*
+Input: pointer to integer value of pthread 
+Output: none
+Description: Outputs, a child thread message, and deltes the current pointer, to perseve
+space....
+*/
+static void *createThreadsString(void *args){
+    int id = *(int*)args;
+    pid_t tid = syscall(SYS_gettid);
+//    pid_t pid = syscall(SYS_getpid);
+    cout << "\n"<< "Hello from the child thread (TID = " << tid << ")";
+//    cout << "\n"<< "Hello from the child thread (PID = " << pid << ")";
+
+    delete (int*)args;
+}
+
+/*
+Input: repetitions, default value is 0, if -rN is specifeid, N value is taken
+Output: average time, which is total time divided by total repetitions
+Description: creates as many threads as specified by the input parameter
+*/
+public:string createThreads(int repetitions){
+    double total=0.00000000;
+    int i=0;
+    
+    //array of pthread_ts
+    pthread_t threads[repetitions];
+    
+    // NanoTimer class provided by Dr.Adams, in project specifications
+    NanoTimer nt;
+    for(i=0;i<repetitions;i++){
+        // Starts Timer
+        nt.start();
+        
+        // Creates Thread &threads[i] and immediately starts createThreadsString
+        // with arguments newInt(i)...
+   
+     
+        pthread_create(&threads[i], NULL,&createThreadsString,(new int(i)));
+
+        // Ends Timer 
+        nt.stop();
+        
+        // Adds nano timer value to running total
+        total = total + nt.asDouble();
+        
+        // Resets Timer
+        nt.reset();
+
+        //joins thread to existing thread (ie one from the array of threads )
+        pthread_join(threads[i],NULL);
+       sleep(1);
+    }
+    
+    // return total summation of times divided by total repetitions
+  
+    return to_string(total/repetitions);
+    
+
+}
+
+
+
+
+};
+
+#endif]0;justin@crappydesktop: ~/Documents/CS232/CS232/Project1.5[01;32mjustin@crappydesktop[00m:[01;34m~/Documents/CS232/CS232/Projectt1.5[00m$ cat *.h
+#ifndef __COMMONVIEW_H__
+#define __COMMONVIEW_H__
+
+
+#include <iostream> 
+#include <string>
+#include <list>
+#include <unistd.h>
+#include <pthread.h>
+
+
+using namespace std; 
+
+ // "Parent" View class that will be inherited by Children (MenuView and CommandLineView)
+class commonView{
+
+   
+    public:void printAverageProcesses(string process) 
+    {
+        cout << "\n" <<  "Create Process Average Time taken: " << process << "\n";  
+    }
+
+   
+    public:void printAverageThreads(string average) 
+    {
+        cout << "\n" <<  "Create Thread Average Time taken: " << average << "\n"; 
+    }
+
+};
+
+#endif
+
+
+ /* NanoTimer.h provides a simple nano-scale timer.
+ *
+ * Begun by: John Kloosterman, for CS 232 at Calvin College.
+ * Enhanced by: Prof. Adams.
+ *
+ * To use this class, compile/link with the '-lrt' switch.
+ *
+ * In Eclipse: Project > Properties > GCC C++ Linker > Libraries > Libraries > +, add 'rt'
+ */
+
+#ifndef NANO_TIMER_H_
+#define NANO_TIMER_H_
+
+#include <ctime>        // timespec, clock_gettime(), etc.
+#include <iostream>     // C++ I/O
+#include <iomanip>      // setprecision()
+#include <sstream>      // stringstream for in-memory formatting
+using namespace std;
+
+class NanoTimer {
+public:
+	NanoTimer()                  { myTotalTime = 0.0; }
+	void start();
+	void stop();
+	void reset()                 { myTotalTime = 0.0; }
+    string asString() const;
+	double getTotalTime() const  { return myTotalTime; }
+	double asDouble() const;
+
+private:
+	struct timespec myStart;
+	struct timespec myEnd;
+	double myTotalTime;
+};
+
+
+/* start the timer.
+ * Postcondition: myStart contains the current time.
+ */
+inline
+void NanoTimer::start() {
+	clock_gettime(CLOCK_MONOTONIC, &myStart);
+}
+
+/* stop the timer.
+ * Postcondition: myStop contains the current time.
+ */
+inline
+void NanoTimer::stop() {
+	clock_gettime(CLOCK_MONOTONIC, &myEnd);
+	myTotalTime += this->asDouble();
+}
+
+const long NSEC_PER_SEC = 1000000000;
+
+/* Utility function to compute time differences
+ *  (used by asString(), asDouble(), etc.
+ * Receive: end, begin, two timespec values.
+ * Return: end - begin
+ * Based on: http://www.gnu.org/s/libc/manual/html_node/Elapsed-Time.html
+ */
+inline
+timespec operator-(const timespec& end, const timespec& begin)
+{
+	timespec result = begin;
+	/* Perform the carry for the later subtraction. */
+	if (end.tv_nsec < begin.tv_nsec) {
+		int nsec = (begin.tv_nsec - end.tv_nsec) / NSEC_PER_SEC + 1;
+		result.tv_nsec -= NSEC_PER_SEC * nsec;
+		result.tv_sec += nsec;
+	}
+	if (end.tv_nsec - begin.tv_nsec > NSEC_PER_SEC) {
+		int nsec = (end.tv_nsec - begin.tv_nsec) / NSEC_PER_SEC;
+		result.tv_nsec += NSEC_PER_SEC * nsec;
+		result.tv_sec -= nsec;
+	}
+
+	/* Compute the time remaining to wait.
+            tv_usec is certainly positive. */
+	result.tv_sec = end.tv_sec - result.tv_sec;
+	result.tv_nsec = end.tv_nsec - result.tv_nsec;
+
+	return result;
+}
+
+/* String representation.
+ * Return: the processor time (user + system) 
+ *    used in the interval between calls to start() and stop(),
+ *    with nanosecond granularity, as a string.
+ */
+inline
+string NanoTimer::asString() const {
+    struct timespec diff = myEnd - myStart;
+    stringstream sstr;
+    sstr << diff.tv_sec 
+         << ( (diff.tv_sec == 1) ? " sec, " : " secs, " )
+         << diff.tv_nsec 
+         << " nsecs";
+    return sstr.str();
+}
+
+/* Double representation.
+ * Return: the processor time (user + system)
+ *    used in the interval between calls to start() and stop(),
+ *    with nanosecond granularity, as a double.
+ */
+inline
+double NanoTimer::asDouble() const {
+   struct timespec diff = myEnd - myStart;
+   return double(diff.tv_sec) + double(diff.tv_nsec) / double(NSEC_PER_SEC);
+}
+
+
+/* ostream output
+ * Receive: out, an ostream; aTimer, a NanoTimer.
+ * Postcondition: aTimer's double representation
+ *      has been inserted into out.
+ * Return: out (for chaining).
+ */
+inline
+ostream& operator<<(ostream& out, const NanoTimer& aTimer) {
+   out << fixed << showpoint << setprecision(9)
+	   << aTimer.getTotalTime();
+   return out;
+}
+
+/* Utility function to display a timespec structure's values
+ *  (for debugging purposes)
+ */
+inline
+ostream& operator<<(ostream& out, const struct timespec& ts) {
+   out << ts.tv_sec 
+       << ( (ts.tv_sec == 1) ? " sec, " : " secs, " )
+       << ts.tv_nsec 
+       << " nsecs";
+   return out;
+}
+
+#endif /* NANO_TIMER_H_ */
+
+#ifndef __PARSECLI_H__
+#define __PARSECLI_H__
+
+#include <unistd.h>
+#include <pthread.h>
+#include <iostream> 
+#include <string>
+#include <list>
+
+using namespace std; 
+
+
+class parseCLI{
+
+    public:bool rN= false;
+
+    public:bool process = false;
+
+    public:bool thread = false;
+
+    public:int repetitions=1;
+
+
+
+    public:void paseCommands(int argc, char* argv[]) 
+    { 
+
+        list <string> list;
+
+        for (int i = 0; i < argc; i++)  {
+            string example = argv[i];
+
+           // cout << "Arugment: " <<  example;
+            list.push_back(example);
+
+            
+            /*
+                handle the -p/-process flags
+            */
+            if (example == "-p" || example == "-process") {
+                process = true;
+                list.pop_back();
+            }
+            /*
+                handle the -t/-thread flags
+            */
+            if (example == "-t" || example == "-thread") {
+                thread = true;
+                list.pop_back();
+            }
+             /*
+                handle the -cL flag (already passed)
+            */
+            if (example == "-cl") {
+                list.pop_back();
+            }
+            /*
+                handle the -rN flag, parse the -rN for the N...
+            */
+            if (example.find("-r") == 0) {
+                example.erase(example.begin(),example.begin()+2);
+                string rNum = example;
+                if (rNum != ""){
+                    repetitions = stoi(rNum);
+                // cout << "Repetitions: "<<repetitions;
+                    list.pop_back();
+                }
+                
+            }
+            /*
+                handles invalid arguments
+            */
+            if (argc - i == 1)
+            {
+                if (list.size() > 1)
+                {
+                list.pop_front();
+                    std::list<string>::iterator it;
+                
+                    for (it = list.begin(); it!= list.end(); ++it)
+                    {
+                    
+                        cout << "Invalid Argument Detected, ignoring: " << *it << "\n";
+                
+                    }
+                }
+            }
+
+        }
+      
+    }
+ 
+
+
+
+};
+
+#endif
+]0;justin@crappydesktop: ~/Documents/CS232/CS232/Project1.5[01;32mjustin@crappydesktop[00m:[01;34m~/Documents/CS232/CS232/Projectt1.5[00m$ ls
+CLIController.cpp   MenuView.cpp
+CLIView.cpp         [0m[01;32mNanoTimer.h[0m
+commonView.h        parseCLI.h
+main.cpp            processData.cpp
+Makefile            typescript
+MenuController.cpp
+]0;justin@crappydesktop: ~/Documents/CS232/CS232/Project1.5[01;32mjustin@crappydesktop[00m:[01;34m~/Documents/CS232/CS232/Projectt1.5[00m$ cat Makefile 
+all:
+	
+	g++ -pthread -std=c++11 main.cpp -o main
+	./main -p -thread -r10 -s -k -cl
+	#./main 
+
+clean:
+	rm main]0;justin@crappydesktop: ~/Documents/CS232/CS232/Project1.5[01;32mjustin@crappydesktop[00m:[01;34m~/Documents/CS232/CS232/Projectt1.5[00m$ clear
+[3J[H[2J]0;justin@crappydesktop: ~/Documents/CS232/CS232/Project1.5[01;32mjustin@crappydesktop[00m:[01;34m~/Documents/CS232/CS232/Projectt1.5[00m$ ls
+CLIController.cpp   MenuView.cpp
+CLIView.cpp         [0m[01;32mNanoTimer.h[0m
+commonView.h        parseCLI.h
+main.cpp            processData.cpp
+Makefile            typescript
+MenuController.cpp
+]0;justin@crappydesktop: ~/Documents/CS232/CS232/Project1.5[01;32mjustin@crappydesktop[00m:[01;34m~/Documents/CS232/CS232/Projectt1.5[00m$ make
+g++ -pthread -std=c++11 main.cpp -o main
+./main -p -thread -r10 -s -k -cl
+Invalid Argument Detected, ignoring: -s
+Invalid Argument Detected, ignoring: -k
+
+Hello From Child Process(PID = 29047)
+
+Hello From Child Process(PID = 29048)
+
+Hello From Child Process(PID = 29063)
+
+Hello From Child Process(PID = 29064)
+
+Hello From Child Process(PID = 29068)
+
+Hello From Child Process(PID = 29069)
+
+Hello From Child Process(PID = 29073)
+
+Hello From Child Process(PID = 29076)
+
+Hello From Child Process(PID = 29079)
+
+Hello From Child Process(PID = 29089)
+
+Create Process Average Time taken: 0.000083
+
+Hello from the child thread (TID = 29093)
+Hello from the child thread (TID = 29096)
+Hello from the child thread (TID = 29097)
+Hello from the child thread (TID = 29104)
+Hello from the child thread (TID = 29105)
+Hello from the child thread (TID = 29108)
+Hello from the child thread (TID = 29109)
+Hello from the child thread (TID = 29112)
+Hello from the child thread (TID = 29114)
+Hello from the child thread (TID = 29117)
+Create Thread Average Time taken: 0.000025
+#./main 
+]0;justin@crappydesktop: ~/Documents/CS232/CS232/Project1.5[01;32mjustin@crappydesktop[00m:[01;34m~/Documents/CS232/CS232/Projectt1.5[00m$ clear
+[3J[H[2J]0;justin@crappydesktop: ~/Documents/CS232/CS232/Project1.5[01;32mjustin@crappydesktop[00m:[01;34m~/Documents/CS232/CS232/Projectt1.5[00m$ ls
+CLIController.cpp  MenuController.cpp
+CLIView.cpp        MenuView.cpp
+commonView.h       [0m[01;32mNanoTimer.h[0m
+[01;32mmain[0m               parseCLI.h
+main.cpp           processData.cpp
+Makefile           typescript
+]0;justin@crappydesktop: ~/Documents/CS232/CS232/Project1.5[01;32mjustin@crappydesktop[00m:[01;34m~/Documents/CS232/CS232/Projectt1.5[00m$ mak[K[K[Kcat Makefile 
+all:
+	
+	g++ -pthread -std=c++11 main.cpp -o main
+	./main -p -thread -r10 -s -k -cl
+	./main 
+
+clean:
+	rm main]0;justin@crappydesktop: ~/Documents/CS232/CS232/Project1.5[01;32mjustin@crappydesktop[00m:[01;34m~/Documents/CS232/CS232/Projectt1.5[00m$ ma[K[Kclear
+[3J[H[2J]0;justin@crappydesktop: ~/Documents/CS232/CS232/Project1.5[01;32mjustin@crappydesktop[00m:[01;34m~/Documents/CS232/CS232/Projectt1.5[00m$ make
+g++ -pthread -std=c++11 main.cpp -o main
+./main -p -thread -r10 -s -k -cl
+Invalid Argument Detected, ignoring: -s
+Invalid Argument Detected, ignoring: -k
+
+Hello From Child Process(PID = 29162)
+
+Hello From Child Process(PID = 29164)
+
+Hello From Child Process(PID = 29178)
+
+Hello From Child Process(PID = 29182)
+
+Hello From Child Process(PID = 29185)
+
+Hello From Child Process(PID = 29187)
+
+Hello From Child Process(PID = 29189)
+
+Hello From Child Process(PID = 29191)
+
+Hello From Child Process(PID = 29193)
+
+Hello From Child Process(PID = 29198)
+
+Create Process Average Time taken: 0.000085
+
+Hello from the child thread (TID = 29202)
+Hello from the child thread (TID = 29204)
+Hello from the child thread (TID = 29206)
+Hello from the child thread (TID = 29209)
+Hello from the child thread (TID = 29215)
+Hello from the child thread (TID = 29217)
+Hello from the child thread (TID = 29219)
+Hello from the child thread (TID = 29221)
+Hello from the child thread (TID = 29232)
+Hello from the child thread (TID = 29234)
+Create Thread Average Time taken: 0.000023
+./main 
+
+Welcome to the Menu Version of this app!
+Please choose from the following options: (please enter y or n 
+1.Would you like to spawn a Thread? y
+
+2.Would you like to spawn a Process? no
+
+How many Times? 12
+
+Hello from the child thread (TID = 29265)
+Hello from the child thread (TID = 29267)
+Hello from the child thread (TID = 29273)
+Hello from the child thread (TID = 29278)
+Hello from the child thread (TID = 29284)
+Hello from the child thread (TID = 29285)
+Hello from the child thread (TID = 29288)
+Hello from the child thread (TID = 29290)
+Hello from the child thread (TID = 29294)
+Hello from the child thread (TID = 29295)
+Hello from the child thread (TID = 29298)
+Hello from the child thread (TID = 29299)
+Create Thread Average Time taken: 0.000026
+]0;justin@crappydesktop: ~/Documents/CS232/CS232/Project1.5[01;32mjustin@crappydesktop[00m:[01;34m~/Documents/CS232/CS232/Projectt1.5[00m$ ./main
+
+Welcome to the Menu Version of this app!
+Please choose from the following options: (please enter y or n 
+1.Would you like to spawn a Thread? y
+
+2.Would you like to spawn a Process? y
+
+How many Times? 10
+
+Hello From Child Process(PID = 29341)
+
+Hello From Child Process(PID = 29344)
+
+Hello From Child Process(PID = 29346)
+
+Hello From Child Process(PID = 29354)
+
+Hello From Child Process(PID = 29356)
+
+Hello From Child Process(PID = 29359)
+
+Hello From Child Process(PID = 29361)
+
+Hello From Child Process(PID = 29363)
+
+Hello From Child Process(PID = 29365)
+
+Hello From Child Process(PID = 29367)
+
+Create Process Average Time taken: 0.000128
+
+Hello from the child thread (TID = 29371)
+Hello from the child thread (TID = 29373)
+Hello from the child thread (TID = 29375)
+Hello from the child thread (TID = 29377)
+Hello from the child thread (TID = 29380)
+Hello from the child thread (TID = 29382)
+Hello from the child thread (TID = 29384)
+Hello from the child thread (TID = 29386)
+Hello from the child thread (TID = 29388)
+Hello from the child thread (TID = 29391)
+Create Thread Average Time taken: 0.000028
+]0;justin@crappydesktop: ~/Documents/CS232/CS232/Project1.5[01;32mjustin@crappydesktop[00m:[01;34m~/Documents/CS232/CS232/Projectt1.5[00m$ exit
+exit
+
+Script done on Wed 27 Feb 2019 01:33:06 AM EST
