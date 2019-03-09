@@ -30,8 +30,6 @@ for file in $DIR; do
     if [ -d $file ] ; then
         clean_files $file $Inter $Quiet $Stats $NumFiles
     else 
-
-
         if [[ $file == *"~" ]]; then
             if [[ $Quiet != "q" ]]; then
                 echo "Deleted File: " $file
@@ -51,10 +49,7 @@ for file in $DIR; do
                 let "NumFiles=NumFiles+1"
             fi
         fi
-
-
-
-
+        
         if [[ $file == *"#" ]]; then
             if [[ $Quiet != "q" ]]; then
                 echo "Deleted File: " $file
@@ -75,7 +70,6 @@ for file in $DIR; do
             fi
         fi
 
-
         if [[ $file != *"."* && $file != *"Makefile"* ]]; then
             if [[ $Quiet != "q" ]]; then
                 echo "Deleted File: " $file
@@ -95,6 +89,27 @@ for file in $DIR; do
                 let "NumFiles=NumFiles+1"
             fi
         fi
+
+        if [[ $file == *"core"* ]]; then
+            if [[ $Quiet != "q" ]]; then
+                echo "Deleted File: " $file
+            fi
+            if [[ $Inter == "i" ]]; then
+                echo "Do you want to delete the file (enter y/n)?:  $file"
+                read toDelete
+                if [[ $toDelete == "y" ]]; then
+                    rm $file
+                    let "NumFiles=NumFiles+1"
+                else
+                    echo "Did not delete: $file"
+                    
+                fi
+            else    
+                rm $file
+                let "NumFiles=NumFiles+1"
+            fi
+        fi
+
     fi
 done
 }
