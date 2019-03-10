@@ -7,10 +7,16 @@ NumFiles=0
 clean_files () {
 #shopt -s dotglob
 #DIR=$1/*
+
+#### GET FILES IN CURRENT DIRECTORY ############
 DIR=$(ls -a $1)
+
+########### CREATE STORE VARIABLES FOR COMMAND LINE ARGUMENTS
 Inter=""
 Quiet=""
 Stats=""
+
+#################### PARSE GIVEN ARGUMENTS TO FUNCTION ##########
 for var in "$@"
 do
     if test $var = "i"; then
@@ -30,16 +36,20 @@ do
 done
 #echo "Directory Values: "$DIR
 for file in $DIR; do
+#########################IF FILE IS FOLDER #########################
     if [ -d $1/$file ] && [ $file != '.' ] && [ $file != '..' ];
     then
         #echo "Directory "$1/$file
+
+#######################RECURSIVE CALL #######################################       
         clean_files $1/$file $Inter $Quiet $Stats $NumFiles
     elif [ $file != '.' ] && [ $file != '..' ] 
     then
+##############################IF FILE IS FILE #######################
         #echo "File Found" $file
 
-
-        if [ $1/$file = *"~" ] && [ -e $1/$file]; then
+############################## FILE PROCESSING #######################
+        case "$file" in *"~")  
             toDelete="y"
             if [ "$Inter" = "i" ]; then
                 echo "Do you want to delete the file (enter y/n)?:  $1/$file"
@@ -53,9 +63,9 @@ for file in $DIR; do
                 NumFiles=$((NumFiles+1))
             fi  
             fi
-        fi
-        
-        if [ $1/$file = *"#" ] && [ -e $1/$file]; then
+        esac
+
+        case "$file" in *"#") 
             toDelete="y"
             if [ "$Inter" = "i" ]; then
                 echo "Do you want to delete the file (enter y/n)?:  $1/$file"
@@ -69,9 +79,9 @@ for file in $DIR; do
                 NumFiles=$((NumFiles+1))
             fi  
             fi
-        fi
+        esac
 
-        if [ $1/$file = *".o" ] && [ -e $1/$file]; then
+        case "$file" in *".o")
             toDelete="y"
             if [ "$Inter" = "i" ]; then
                 echo "Do you want to delete the file (enter y/n)?:  $1/$file"
@@ -85,14 +95,10 @@ for file in $DIR; do
                 NumFiles=$((NumFiles+1))
             fi  
             fi
-        fi
+        esac
 
-        if [ $1/$file != *"."* ] && [ $1/$file != *"Makefile" ] && [ -e $1/$file ]; then
+        case "$file" in "core")
             toDelete="y"
-            # echo "Inter value: "$Inter
-            # echo "Quiet: "$Quiet
-            # echo "toDelete: "$toDelete
-            # echo "Stats: "$Stats
             if [ "$Inter" = "i" ]; then
                 echo "Do you want to delete the file (enter y/n)?:  $1/$file"
                 read toDelete
@@ -105,9 +111,25 @@ for file in $DIR; do
                 NumFiles=$((NumFiles+1))
             fi  
             fi
-        fi
+        esac
 
-        if [ $1/$file = "core" ] && [ test -e $1/$file]; then
+        case "$file" in ^"Makefile")
+            toDelete="y"
+            if [ "$Inter" = "i" ]; then
+                echo "Do you want to delete the file (enter y/n)?:  $1/$file"
+                read toDelete
+            else
+            if test $toDelete = "y"; then
+                if [ "$Quiet" != "q" ]; then
+                    echo "Deleted File: " $1/$file
+                fi
+                rm $1/$file
+                NumFiles=$((NumFiles+1))
+            fi  
+            fi
+        esac
+
+        if [ -x $1/$file ]; then
             toDelete="y"
             if [ "$Inter" = "i" ]; then
                 echo "Do you want to delete the file (enter y/n)?:  $1/$file"
@@ -130,7 +152,7 @@ done
 
 
 
-
+##################### SET FLAGS #############################################
 i=""
 q=""
 s=""
@@ -138,7 +160,7 @@ s=""
 
 for var in "$@"
 do
-
+############### PARSE COMMAND LINE ARGUMENTS #########################
     if test $var = "-i" || test $var = "--interactive" ; then
         unset i
         i="i"  
@@ -154,9 +176,11 @@ do
 
     fi
 done
-
+########### CALL THE RECURSIVE FUNCTION ##33###################
 clean_files $1 $i $q $s $NumFiles
 
+
+#3############# IF STATS FLAG, THEN PRINT STATS ###################
 if [ "$s" = "s" ]; then
     echo "Number of Files deleted: " $NumFiles
     echo "Size After: " && du -sh * | grep 20191
