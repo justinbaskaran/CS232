@@ -54,14 +54,13 @@ for file in $DIR; do
             if [ "$Inter" = "i" ]; then
                 echo "Do you want to delete the file (enter y/n)?:  $1/$file"
                 read toDelete
-            else
+            fi
             if test $toDelete = "y"; then
                 if [ "$Quiet" != "q" ]; then
                     echo "Deleted File: " $1/$file
                 fi
                 rm $1/$file
-                NumFiles=$((NumFiles+1))
-            fi  
+                NumFiles=$((NumFiles+1))  
             fi
         esac
 
@@ -70,14 +69,13 @@ for file in $DIR; do
             if [ "$Inter" = "i" ]; then
                 echo "Do you want to delete the file (enter y/n)?:  $1/$file"
                 read toDelete
-            else
+            fi
             if test $toDelete = "y"; then
                 if [ "$Quiet" != "q" ]; then
                     echo "Deleted File: " $1/$file
                 fi
                 rm $1/$file
-                NumFiles=$((NumFiles+1))
-            fi  
+                NumFiles=$((NumFiles+1))  
             fi
         esac
 
@@ -86,7 +84,7 @@ for file in $DIR; do
             if [ "$Inter" = "i" ]; then
                 echo "Do you want to delete the file (enter y/n)?:  $1/$file"
                 read toDelete
-            else
+            fi
             if test $toDelete = "y"; then
                 if [ "$Quiet" != "q" ]; then
                     echo "Deleted File: " $1/$file
@@ -94,7 +92,7 @@ for file in $DIR; do
                 rm $1/$file
                 NumFiles=$((NumFiles+1))
             fi  
-            fi
+            
         esac
 
         case "$file" in "core")
@@ -102,46 +100,28 @@ for file in $DIR; do
             if [ "$Inter" = "i" ]; then
                 echo "Do you want to delete the file (enter y/n)?:  $1/$file"
                 read toDelete
-            else
+            fi
             if test $toDelete = "y"; then
                 if [ "$Quiet" != "q" ]; then
                     echo "Deleted File: " $1/$file
                 fi
                 rm $1/$file
-                NumFiles=$((NumFiles+1))
-            fi  
+                NumFiles=$((NumFiles+1))  
             fi
         esac
 
-        case "$file" in ^"Makefile")
+        if [ -x $1/$file ] && [ "$file" != "clean" ]; then
             toDelete="y"
             if [ "$Inter" = "i" ]; then
                 echo "Do you want to delete the file (enter y/n)?:  $1/$file"
                 read toDelete
-            else
-            if test $toDelete = "y"; then
-                if [ "$Quiet" != "q" ]; then
-                    echo "Deleted File: " $1/$file
-                fi
-                rm $1/$file
-                NumFiles=$((NumFiles+1))
-            fi  
             fi
-        esac
-
-        if [ -x $1/$file ]; then
-            toDelete="y"
-            if [ "$Inter" = "i" ]; then
-                echo "Do you want to delete the file (enter y/n)?:  $1/$file"
-                read toDelete
-            else
             if test $toDelete = "y"; then
                 if [ "$Quiet" != "q" ]; then
                     echo "Deleted File: " $1/$file
                 fi
                 rm $1/$file
-                NumFiles=$((NumFiles+1))
-            fi  
+                NumFiles=$((NumFiles+1))  
             fi
         fi
 
@@ -156,7 +136,7 @@ done
 i=""
 q=""
 s=""
-
+fileName="."
 
 for var in "$@"
 do
@@ -164,29 +144,31 @@ do
     if test $var = "-i" || test $var = "--interactive" ; then
         unset i
         i="i"  
-    fi
-    if test $var = "-q" || test $var = "--quiet" ; then
+    
+    elif test $var = "-q" || test $var = "--quiet" ; then
         unset q
         q="q" 
-    fi
-    if test $var = "-s" || test $var = "--stats"; then
-        echo "Size Before: " && du -sh * | grep 20191
+    
+    elif test $var = "-s" || test $var = "--stats"; then
+        echo "Size Before: " && du -sh * | grep 2019
         unset s
         s="s"
+    elif test $var != "0"; then   
+        fileName=$var 
 
     fi
+
+    # if test $1 = ""; then
+    #     fileName=$1
+    # fi
+
 done
 ########### CALL THE RECURSIVE FUNCTION ##33###################
-clean_files $1 $i $q $s $NumFiles
+clean_files $fileName $i $q $s $NumFiles
 
 
 #3############# IF STATS FLAG, THEN PRINT STATS ###################
 if [ "$s" = "s" ]; then
     echo "Number of Files deleted: " $NumFiles
-    echo "Size After: " && du -sh * | grep 20191
+    echo "Size After: " && du -sh * | grep 2019
 fi 
-
-
-
-
-

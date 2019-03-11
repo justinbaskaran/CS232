@@ -1,0 +1,592 @@
+Script started on Mon 11 Mar 2019 10:56:04 AM EDT
+jpb29@gold11:~/Project2$ cat Makfi[K[Keile[K[K[Kfile
+all:
+	cp -r /home/cs/232/projects/2/2019/ .
+	chmod +x clean
+	
+	################SCRIPT 2.########################
+	./clean 2019/partA
+	################SCRIPT 3.########################
+	du -sh * | grep 2019
+	rm -r 2019/
+	
+	################SCRIPT 4.########################
+	cp -r /home/cs/232/projects/2/2019/ .
+	chmod +x clean
+	./clean
+	################SCRIPT 5.########################
+	du -sh * | grep 2019
+	rm -r 2019/
+
+	################EXTRA CREDIT Q.########################
+	cp -r /home/cs/232/projects/2/2019/ .
+	chmod +x clean
+	./clean 2019 -q
+	du -sh * | grep 2019
+	rm -r 2019/
+
+	################EXTRA CREDIT S.########################
+	cp -r /home/cs/232/projects/2/2019/ .
+	chmod +x clean
+	./clean 2019 -s
+	du -sh * | grep 2019
+	rm -r 2019/
+
+	################EXTRA CREDIT I.########################
+	cp -r /home/cs/232/projects/2/2019/ .
+	chmod +x clean
+	./clean 2019/partA -i -s
+	du -sh * | grep 2019
+	rm -r 2019/
+
+	cp -r /home/cs/232/projects/2/2019/ .
+clean:
+	rm -r 2019/jpb29@gold11:~/Project2$ 
+jpb29@gold11:~/Project2$ cat clean
+#!/bin/sh
+# Justin Baskaran
+# CS 232- Project 2
+# March 06, 2019
+NumFiles=0
+
+clean_files () {
+#shopt -s dotglob
+#DIR=$1/*
+
+#### GET FILES IN CURRENT DIRECTORY ############
+DIR=$(ls -a $1)
+
+########### CREATE STORE VARIABLES FOR COMMAND LINE ARGUMENTS
+Inter=""
+Quiet=""
+Stats=""
+
+#################### PARSE GIVEN ARGUMENTS TO FUNCTION ##########
+for var in "$@"
+do
+    if test $var = "i"; then
+        unset Inter
+        Inter="i"  
+    fi
+    if test $var = "q" ; then
+        unset Quiet
+        Quiet="q" 
+    fi
+
+    if test $var = "s" ; then
+        unset Stats
+        Stats="s"
+
+    fi
+done
+#echo "Directory Values: "$DIR
+for file in $DIR; do
+#########################IF FILE IS FOLDER #########################
+    if [ -d $1/$file ] && [ $file != '.' ] && [ $file != '..' ];
+    then
+        #echo "Directory "$1/$file
+
+#######################RECURSIVE CALL #######################################       
+        clean_files $1/$file $Inter $Quiet $Stats $NumFiles
+    elif [ $file != '.' ] && [ $file != '..' ] 
+    then
+##############################IF FILE IS FILE #######################
+        #echo "File Found" $file
+
+############################## FILE PROCESSING #######################
+        case "$file" in *"~")  
+            toDelete="y"
+            if [ "$Inter" = "i" ]; then
+                echo "Do you want to delete the file (enter y/n)?:  $1/$file"
+                read toDelete
+            fi
+            if test $toDelete = "y"; then
+                if [ "$Quiet" != "q" ]; then
+                    echo "Deleted File: " $1/$file
+                fi
+                rm $1/$file
+                NumFiles=$((NumFiles+1))  
+            fi
+        esac
+
+        case "$file" in *"#") 
+            toDelete="y"
+            if [ "$Inter" = "i" ]; then
+                echo "Do you want to delete the file (enter y/n)?:  $1/$file"
+                read toDelete
+            fi
+            if test $toDelete = "y"; then
+                if [ "$Quiet" != "q" ]; then
+                    echo "Deleted File: " $1/$file
+                fi
+                rm $1/$file
+                NumFiles=$((NumFiles+1))  
+            fi
+        esac
+
+        case "$file" in *".o")
+            toDelete="y"
+            if [ "$Inter" = "i" ]; then
+                echo "Do you want to delete the file (enter y/n)?:  $1/$file"
+                read toDelete
+            fi
+            if test $toDelete = "y"; then
+                if [ "$Quiet" != "q" ]; then
+                    echo "Deleted File: " $1/$file
+                fi
+                rm $1/$file
+                NumFiles=$((NumFiles+1))
+            fi  
+            
+        esac
+
+        case "$file" in "core")
+            toDelete="y"
+            if [ "$Inter" = "i" ]; then
+                echo "Do you want to delete the file (enter y/n)?:  $1/$file"
+                read toDelete
+            fi
+            if test $toDelete = "y"; then
+                if [ "$Quiet" != "q" ]; then
+                    echo "Deleted File: " $1/$file
+                fi
+                rm $1/$file
+                NumFiles=$((NumFiles+1))  
+            fi
+        esac
+
+        if [ -x $1/$file ] && [ "$file" != "clean" ]; then
+            toDelete="y"
+            if [ "$Inter" = "i" ]; then
+                echo "Do you want to delete the file (enter y/n)?:  $1/$file"
+                read toDelete
+            fi
+            if test $toDelete = "y"; then
+                if [ "$Quiet" != "q" ]; then
+                    echo "Deleted File: " $1/$file
+                fi
+                rm $1/$file
+                NumFiles=$((NumFiles+1))  
+            fi
+        fi
+
+    fi
+done
+}
+
+
+
+
+##################### SET FLAGS #############################################
+i=""
+q=""
+s=""
+fileName="."
+
+for var in "$@"
+do
+############### PARSE COMMAND LINE ARGUMENTS #########################
+    if test $var = "-i" || test $var = "--interactive" ; then
+        unset i
+        i="i"  
+    
+    elif test $var = "-q" || test $var = "--quiet" ; then
+        unset q
+        q="q" 
+    
+    elif test $var = "-s" || test $var = "--stats"; then
+        echo "Size Before: " && du -sh * | grep 2019
+        unset s
+        s="s"
+    elif test $var != "0"; then   
+        fileName=$var 
+
+    fi
+
+    # if test $1 = ""; then
+    #     fileName=$1
+    # fi
+
+done
+########### CALL THE RECURSIVE FUNCTION ##33###################
+clean_files $fileName $i $q $s $NumFiles
+
+
+#3############# IF STATS FLAG, THEN PRINT STATS ###################
+if [ "$s" = "s" ]; then
+    echo "Number of Files deleted: " $NumFiles
+    echo "Size After: " && du -sh * | grep 2019
+fi jpb29@gold11:~/Project2$ clear
+[3;J[H[2Jjpb29@gold11:~/Project2$ make
+cp -r /home/cs/232/projects/2/2019/ .
+chmod +x clean
+################SCRIPT 2.########################
+./clean 2019/partA
+Deleted File:  2019/partA/coreTest/core
+Deleted File:  2019/partA/coreTest/coreTest
+Deleted File:  2019/partA/goodbye/goodbye
+Deleted File:  2019/partA/goodbye/#goodbye.c#
+Deleted File:  2019/partA/goodbye/goodbye.c~
+Deleted File:  2019/partA/hello
+Deleted File:  2019/partA/#hello.c#
+Deleted File:  2019/partA/hello.c~
+################SCRIPT 3.########################
+du -sh * | grep 2019
+1.7M	2019
+rm -r 2019/
+################SCRIPT 4.########################
+cp -r /home/cs/232/projects/2/2019/ .
+chmod +x clean
+./clean
+Deleted File:  ./2019/partA/coreTest/core
+Deleted File:  ./2019/partA/coreTest/coreTest
+Deleted File:  ./2019/partA/goodbye/goodbye
+Deleted File:  ./2019/partA/goodbye/#goodbye.c#
+Deleted File:  ./2019/partA/goodbye/goodbye.c~
+Deleted File:  ./2019/partA/hello
+Deleted File:  ./2019/partA/#hello.c#
+Deleted File:  ./2019/partA/hello.c~
+Deleted File:  ./2019/partB/B1/B1a/goodbye/goodbye
+Deleted File:  ./2019/partB/B1/B1a/goodbye/#goodbye.c#
+Deleted File:  ./2019/partB/B1/B1a/goodbye/goodbye.c~
+Deleted File:  ./2019/partB/B1/B1a/hello
+Deleted File:  ./2019/partB/B1/B1a/#hello.c#
+Deleted File:  ./2019/partB/B1/B1a/hello.c~
+Deleted File:  ./2019/partB/B1/B1b/goodbye
+Deleted File:  ./2019/partB/B1/B1b/#goodbye.c#
+Deleted File:  ./2019/partB/B1/B1b/goodbye.c~
+Deleted File:  ./2019/partB/B1/B1b/#hay.c#
+Deleted File:  ./2019/partB/B1/B1b/hay.c~
+Deleted File:  ./2019/partB/B1/B1b/#hey.c#
+Deleted File:  ./2019/partB/B1/B1b/hey.c~
+Deleted File:  ./2019/partB/B1/B1c/goodbye
+Deleted File:  ./2019/partB/B1/B1c/#goodbye.c#
+Deleted File:  ./2019/partB/B1/B1c/goodbye.c~
+Deleted File:  ./2019/partB/B1/B1c/hay
+Deleted File:  ./2019/partB/B1/B1c/#hay.c#
+Deleted File:  ./2019/partB/B1/B1c/hay.c~
+Deleted File:  ./2019/partB/B1/B1c/#hay.h#
+Deleted File:  ./2019/partB/B1/B1c/hay.h~
+Deleted File:  ./2019/partB/B1/B1c/hay.o
+Deleted File:  ./2019/partB/B1/B1c/hey
+Deleted File:  ./2019/partB/B1/B1c/#hey.c#
+Deleted File:  ./2019/partB/B1/B1c/hey.c~
+Deleted File:  ./2019/partB/B1/B1c/#hey.h#
+Deleted File:  ./2019/partB/B1/B1c/hey.h~
+Deleted File:  ./2019/partB/B1/B1c/hey.o
+Deleted File:  ./2019/partB/B1/B1c/main
+Deleted File:  ./2019/partB/B1/B1c/#main.c#
+Deleted File:  ./2019/partB/B1/B1c/main.c~
+Deleted File:  ./2019/partB/B1/B1c/main.o
+Deleted File:  ./2019/partB/B3/B3a/goodbye/goodbye
+Deleted File:  ./2019/partB/B3/B3a/goodbye/#goodbye.c#
+Deleted File:  ./2019/partB/B3/B3a/goodbye/goodbye.c~
+Deleted File:  ./2019/partB/B3/B3a/hello
+Deleted File:  ./2019/partB/B3/B3a/#hello.c#
+Deleted File:  ./2019/partB/B3/B3a/hello.c~
+Deleted File:  ./2019/partB/B3/B3b/goodbye
+Deleted File:  ./2019/partB/B3/B3b/#goodbye.c#
+Deleted File:  ./2019/partB/B3/B3b/goodbye.c~
+Deleted File:  ./2019/partB/B3/B3b/#hay.c#
+Deleted File:  ./2019/partB/B3/B3b/hay.c~
+Deleted File:  ./2019/partB/B3/B3b/#hey.c#
+Deleted File:  ./2019/partB/B3/B3b/hey.c~
+Deleted File:  ./2019/partB/B3/B3c/goodbye
+Deleted File:  ./2019/partB/B3/B3c/#goodbye.c#
+Deleted File:  ./2019/partB/B3/B3c/goodbye.c~
+Deleted File:  ./2019/partB/B3/B3c/hay
+Deleted File:  ./2019/partB/B3/B3c/#hay.c#
+Deleted File:  ./2019/partB/B3/B3c/hay.c~
+Deleted File:  ./2019/partB/B3/B3c/#hay.h#
+Deleted File:  ./2019/partB/B3/B3c/hay.h~
+Deleted File:  ./2019/partB/B3/B3c/hay.o
+Deleted File:  ./2019/partB/B3/B3c/hey
+Deleted File:  ./2019/partB/B3/B3c/#hey.c#
+Deleted File:  ./2019/partB/B3/B3c/hey.c~
+Deleted File:  ./2019/partB/B3/B3c/#hey.h#
+Deleted File:  ./2019/partB/B3/B3c/hey.h~
+Deleted File:  ./2019/partB/B3/B3c/hey.o
+Deleted File:  ./2019/partB/B3/B3c/main
+Deleted File:  ./2019/partB/B3/B3c/#main.c#
+Deleted File:  ./2019/partB/B3/B3c/main.c~
+Deleted File:  ./2019/partB/B3/B3c/main.o
+Deleted File:  ./2019/partC/coreTest/core
+Deleted File:  ./2019/partC/coreTest/coreTest
+Deleted File:  ./2019/partC/goodbye/goodbye
+Deleted File:  ./2019/partC/goodbye/#goodbye.c#
+Deleted File:  ./2019/partC/goodbye/goodbye.c~
+Deleted File:  ./2019/partC/hello
+Deleted File:  ./2019/partC/#hello.c#
+Deleted File:  ./2019/partC/hello.c~
+Deleted File:  ./2019/partC/.secret/S1/S1a/goodbye/goodbye
+Deleted File:  ./2019/partC/.secret/S1/S1a/goodbye/#goodbye.c#
+Deleted File:  ./2019/partC/.secret/S1/S1a/goodbye/goodbye.c~
+Deleted File:  ./2019/partC/.secret/S1/S1a/hello
+Deleted File:  ./2019/partC/.secret/S1/S1a/#hello.c#
+Deleted File:  ./2019/partC/.secret/S1/S1a/hello.c~
+Deleted File:  ./2019/partC/.secret/S1/S1b/goodbye
+Deleted File:  ./2019/partC/.secret/S1/S1b/#goodbye.c#
+Deleted File:  ./2019/partC/.secret/S1/S1b/goodbye.c~
+Deleted File:  ./2019/partC/.secret/S1/S1b/#hay.c#
+Deleted File:  ./2019/partC/.secret/S1/S1b/hay.c~
+Deleted File:  ./2019/partC/.secret/S1/S1b/#hey.c#
+Deleted File:  ./2019/partC/.secret/S1/S1b/hey.c~
+Deleted File:  ./2019/partC/.secret/S1/S1c/goodbye
+Deleted File:  ./2019/partC/.secret/S1/S1c/#goodbye.c#
+Deleted File:  ./2019/partC/.secret/S1/S1c/goodbye.c~
+Deleted File:  ./2019/partC/.secret/S1/S1c/hay
+Deleted File:  ./2019/partC/.secret/S1/S1c/#hay.c#
+Deleted File:  ./2019/partC/.secret/S1/S1c/hay.c~
+Deleted File:  ./2019/partC/.secret/S1/S1c/#hay.h#
+Deleted File:  ./2019/partC/.secret/S1/S1c/hay.h~
+Deleted File:  ./2019/partC/.secret/S1/S1c/hay.o
+Deleted File:  ./2019/partC/.secret/S1/S1c/hey
+Deleted File:  ./2019/partC/.secret/S1/S1c/#hey.c#
+Deleted File:  ./2019/partC/.secret/S1/S1c/hey.c~
+Deleted File:  ./2019/partC/.secret/S1/S1c/#hey.h#
+Deleted File:  ./2019/partC/.secret/S1/S1c/hey.h~
+Deleted File:  ./2019/partC/.secret/S1/S1c/hey.o
+Deleted File:  ./2019/partC/.secret/S1/S1c/main
+Deleted File:  ./2019/partC/.secret/S1/S1c/#main.c#
+Deleted File:  ./2019/partC/.secret/S1/S1c/main.c~
+Deleted File:  ./2019/partC/.secret/S1/S1c/main.o
+Deleted File:  ./2019/partC/.secret/S3/S3a/goodbye/goodbye
+Deleted File:  ./2019/partC/.secret/S3/S3a/goodbye/#goodbye.c#
+Deleted File:  ./2019/partC/.secret/S3/S3a/goodbye/goodbye.c~
+Deleted File:  ./2019/partC/.secret/S3/S3a/hello
+Deleted File:  ./2019/partC/.secret/S3/S3a/#hello.c#
+Deleted File:  ./2019/partC/.secret/S3/S3a/hello.c~
+Deleted File:  ./2019/partC/.secret/S3/S3b/goodbye
+Deleted File:  ./2019/partC/.secret/S3/S3b/#goodbye.c#
+Deleted File:  ./2019/partC/.secret/S3/S3b/goodbye.c~
+Deleted File:  ./2019/partC/.secret/S3/S3b/#hay.c#
+Deleted File:  ./2019/partC/.secret/S3/S3b/hay.c~
+Deleted File:  ./2019/partC/.secret/S3/S3b/#hey.c#
+Deleted File:  ./2019/partC/.secret/S3/S3b/hey.c~
+Deleted File:  ./2019/partC/.secret/S3/S3c/goodbye
+Deleted File:  ./2019/partC/.secret/S3/S3c/#goodbye.c#
+Deleted File:  ./2019/partC/.secret/S3/S3c/goodbye.c~
+Deleted File:  ./2019/partC/.secret/S3/S3c/hay
+Deleted File:  ./2019/partC/.secret/S3/S3c/#hay.c#
+Deleted File:  ./2019/partC/.secret/S3/S3c/hay.c~
+Deleted File:  ./2019/partC/.secret/S3/S3c/#hay.h#
+Deleted File:  ./2019/partC/.secret/S3/S3c/hay.h~
+Deleted File:  ./2019/partC/.secret/S3/S3c/hay.o
+Deleted File:  ./2019/partC/.secret/S3/S3c/hey
+Deleted File:  ./2019/partC/.secret/S3/S3c/#hey.c#
+Deleted File:  ./2019/partC/.secret/S3/S3c/hey.c~
+Deleted File:  ./2019/partC/.secret/S3/S3c/#hey.h#
+Deleted File:  ./2019/partC/.secret/S3/S3c/hey.h~
+Deleted File:  ./2019/partC/.secret/S3/S3c/hey.o
+Deleted File:  ./2019/partC/.secret/S3/S3c/main
+Deleted File:  ./2019/partC/.secret/S3/S3c/#main.c#
+Deleted File:  ./2019/partC/.secret/S3/S3c/main.c~
+Deleted File:  ./2019/partC/.secret/S3/S3c/main.o
+Deleted File:  ./2019/partC/.secret/testCore/core
+Deleted File:  ./2019/partC/.secret/testCore/coreTest
+################SCRIPT 5.########################
+du -sh * | grep 2019
+392K	2019
+rm -r 2019/
+################EXTRA CREDIT Q.########################
+cp -r /home/cs/232/projects/2/2019/ .
+chmod +x clean
+./clean 2019 -q
+du -sh * | grep 2019
+392K	2019
+rm -r 2019/
+################EXTRA CREDIT S.########################
+cp -r /home/cs/232/projects/2/2019/ .
+chmod +x clean
+./clean 2019 -s
+Size Before: 
+2.0M	2019
+Deleted File:  2019/partA/coreTest/core
+Deleted File:  2019/partA/coreTest/coreTest
+Deleted File:  2019/partA/goodbye/goodbye
+Deleted File:  2019/partA/goodbye/#goodbye.c#
+Deleted File:  2019/partA/goodbye/goodbye.c~
+Deleted File:  2019/partA/hello
+Deleted File:  2019/partA/#hello.c#
+Deleted File:  2019/partA/hello.c~
+Deleted File:  2019/partB/B1/B1a/goodbye/goodbye
+Deleted File:  2019/partB/B1/B1a/goodbye/#goodbye.c#
+Deleted File:  2019/partB/B1/B1a/goodbye/goodbye.c~
+Deleted File:  2019/partB/B1/B1a/hello
+Deleted File:  2019/partB/B1/B1a/#hello.c#
+Deleted File:  2019/partB/B1/B1a/hello.c~
+Deleted File:  2019/partB/B1/B1b/goodbye
+Deleted File:  2019/partB/B1/B1b/#goodbye.c#
+Deleted File:  2019/partB/B1/B1b/goodbye.c~
+Deleted File:  2019/partB/B1/B1b/#hay.c#
+Deleted File:  2019/partB/B1/B1b/hay.c~
+Deleted File:  2019/partB/B1/B1b/#hey.c#
+Deleted File:  2019/partB/B1/B1b/hey.c~
+Deleted File:  2019/partB/B1/B1c/goodbye
+Deleted File:  2019/partB/B1/B1c/#goodbye.c#
+Deleted File:  2019/partB/B1/B1c/goodbye.c~
+Deleted File:  2019/partB/B1/B1c/hay
+Deleted File:  2019/partB/B1/B1c/#hay.c#
+Deleted File:  2019/partB/B1/B1c/hay.c~
+Deleted File:  2019/partB/B1/B1c/#hay.h#
+Deleted File:  2019/partB/B1/B1c/hay.h~
+Deleted File:  2019/partB/B1/B1c/hay.o
+Deleted File:  2019/partB/B1/B1c/hey
+Deleted File:  2019/partB/B1/B1c/#hey.c#
+Deleted File:  2019/partB/B1/B1c/hey.c~
+Deleted File:  2019/partB/B1/B1c/#hey.h#
+Deleted File:  2019/partB/B1/B1c/hey.h~
+Deleted File:  2019/partB/B1/B1c/hey.o
+Deleted File:  2019/partB/B1/B1c/main
+Deleted File:  2019/partB/B1/B1c/#main.c#
+Deleted File:  2019/partB/B1/B1c/main.c~
+Deleted File:  2019/partB/B1/B1c/main.o
+Deleted File:  2019/partB/B3/B3a/goodbye/goodbye
+Deleted File:  2019/partB/B3/B3a/goodbye/#goodbye.c#
+Deleted File:  2019/partB/B3/B3a/goodbye/goodbye.c~
+Deleted File:  2019/partB/B3/B3a/hello
+Deleted File:  2019/partB/B3/B3a/#hello.c#
+Deleted File:  2019/partB/B3/B3a/hello.c~
+Deleted File:  2019/partB/B3/B3b/goodbye
+Deleted File:  2019/partB/B3/B3b/#goodbye.c#
+Deleted File:  2019/partB/B3/B3b/goodbye.c~
+Deleted File:  2019/partB/B3/B3b/#hay.c#
+Deleted File:  2019/partB/B3/B3b/hay.c~
+Deleted File:  2019/partB/B3/B3b/#hey.c#
+Deleted File:  2019/partB/B3/B3b/hey.c~
+Deleted File:  2019/partB/B3/B3c/goodbye
+Deleted File:  2019/partB/B3/B3c/#goodbye.c#
+Deleted File:  2019/partB/B3/B3c/goodbye.c~
+Deleted File:  2019/partB/B3/B3c/hay
+Deleted File:  2019/partB/B3/B3c/#hay.c#
+Deleted File:  2019/partB/B3/B3c/hay.c~
+Deleted File:  2019/partB/B3/B3c/#hay.h#
+Deleted File:  2019/partB/B3/B3c/hay.h~
+Deleted File:  2019/partB/B3/B3c/hay.o
+Deleted File:  2019/partB/B3/B3c/hey
+Deleted File:  2019/partB/B3/B3c/#hey.c#
+Deleted File:  2019/partB/B3/B3c/hey.c~
+Deleted File:  2019/partB/B3/B3c/#hey.h#
+Deleted File:  2019/partB/B3/B3c/hey.h~
+Deleted File:  2019/partB/B3/B3c/hey.o
+Deleted File:  2019/partB/B3/B3c/main
+Deleted File:  2019/partB/B3/B3c/#main.c#
+Deleted File:  2019/partB/B3/B3c/main.c~
+Deleted File:  2019/partB/B3/B3c/main.o
+Deleted File:  2019/partC/coreTest/core
+Deleted File:  2019/partC/coreTest/coreTest
+Deleted File:  2019/partC/goodbye/goodbye
+Deleted File:  2019/partC/goodbye/#goodbye.c#
+Deleted File:  2019/partC/goodbye/goodbye.c~
+Deleted File:  2019/partC/hello
+Deleted File:  2019/partC/#hello.c#
+Deleted File:  2019/partC/hello.c~
+Deleted File:  2019/partC/.secret/S1/S1a/goodbye/goodbye
+Deleted File:  2019/partC/.secret/S1/S1a/goodbye/#goodbye.c#
+Deleted File:  2019/partC/.secret/S1/S1a/goodbye/goodbye.c~
+Deleted File:  2019/partC/.secret/S1/S1a/hello
+Deleted File:  2019/partC/.secret/S1/S1a/#hello.c#
+Deleted File:  2019/partC/.secret/S1/S1a/hello.c~
+Deleted File:  2019/partC/.secret/S1/S1b/goodbye
+Deleted File:  2019/partC/.secret/S1/S1b/#goodbye.c#
+Deleted File:  2019/partC/.secret/S1/S1b/goodbye.c~
+Deleted File:  2019/partC/.secret/S1/S1b/#hay.c#
+Deleted File:  2019/partC/.secret/S1/S1b/hay.c~
+Deleted File:  2019/partC/.secret/S1/S1b/#hey.c#
+Deleted File:  2019/partC/.secret/S1/S1b/hey.c~
+Deleted File:  2019/partC/.secret/S1/S1c/goodbye
+Deleted File:  2019/partC/.secret/S1/S1c/#goodbye.c#
+Deleted File:  2019/partC/.secret/S1/S1c/goodbye.c~
+Deleted File:  2019/partC/.secret/S1/S1c/hay
+Deleted File:  2019/partC/.secret/S1/S1c/#hay.c#
+Deleted File:  2019/partC/.secret/S1/S1c/hay.c~
+Deleted File:  2019/partC/.secret/S1/S1c/#hay.h#
+Deleted File:  2019/partC/.secret/S1/S1c/hay.h~
+Deleted File:  2019/partC/.secret/S1/S1c/hay.o
+Deleted File:  2019/partC/.secret/S1/S1c/hey
+Deleted File:  2019/partC/.secret/S1/S1c/#hey.c#
+Deleted File:  2019/partC/.secret/S1/S1c/hey.c~
+Deleted File:  2019/partC/.secret/S1/S1c/#hey.h#
+Deleted File:  2019/partC/.secret/S1/S1c/hey.h~
+Deleted File:  2019/partC/.secret/S1/S1c/hey.o
+Deleted File:  2019/partC/.secret/S1/S1c/main
+Deleted File:  2019/partC/.secret/S1/S1c/#main.c#
+Deleted File:  2019/partC/.secret/S1/S1c/main.c~
+Deleted File:  2019/partC/.secret/S1/S1c/main.o
+Deleted File:  2019/partC/.secret/S3/S3a/goodbye/goodbye
+Deleted File:  2019/partC/.secret/S3/S3a/goodbye/#goodbye.c#
+Deleted File:  2019/partC/.secret/S3/S3a/goodbye/goodbye.c~
+Deleted File:  2019/partC/.secret/S3/S3a/hello
+Deleted File:  2019/partC/.secret/S3/S3a/#hello.c#
+Deleted File:  2019/partC/.secret/S3/S3a/hello.c~
+Deleted File:  2019/partC/.secret/S3/S3b/goodbye
+Deleted File:  2019/partC/.secret/S3/S3b/#goodbye.c#
+Deleted File:  2019/partC/.secret/S3/S3b/goodbye.c~
+Deleted File:  2019/partC/.secret/S3/S3b/#hay.c#
+Deleted File:  2019/partC/.secret/S3/S3b/hay.c~
+Deleted File:  2019/partC/.secret/S3/S3b/#hey.c#
+Deleted File:  2019/partC/.secret/S3/S3b/hey.c~
+Deleted File:  2019/partC/.secret/S3/S3c/goodbye
+Deleted File:  2019/partC/.secret/S3/S3c/#goodbye.c#
+Deleted File:  2019/partC/.secret/S3/S3c/goodbye.c~
+Deleted File:  2019/partC/.secret/S3/S3c/hay
+Deleted File:  2019/partC/.secret/S3/S3c/#hay.c#
+Deleted File:  2019/partC/.secret/S3/S3c/hay.c~
+Deleted File:  2019/partC/.secret/S3/S3c/#hay.h#
+Deleted File:  2019/partC/.secret/S3/S3c/hay.h~
+Deleted File:  2019/partC/.secret/S3/S3c/hay.o
+Deleted File:  2019/partC/.secret/S3/S3c/hey
+Deleted File:  2019/partC/.secret/S3/S3c/#hey.c#
+Deleted File:  2019/partC/.secret/S3/S3c/hey.c~
+Deleted File:  2019/partC/.secret/S3/S3c/#hey.h#
+Deleted File:  2019/partC/.secret/S3/S3c/hey.h~
+Deleted File:  2019/partC/.secret/S3/S3c/hey.o
+Deleted File:  2019/partC/.secret/S3/S3c/main
+Deleted File:  2019/partC/.secret/S3/S3c/#main.c#
+Deleted File:  2019/partC/.secret/S3/S3c/main.c~
+Deleted File:  2019/partC/.secret/S3/S3c/main.o
+Deleted File:  2019/partC/.secret/testCore/core
+Deleted File:  2019/partC/.secret/testCore/coreTest
+Number of Files deleted:  146
+Size After: 
+392K	2019
+du -sh * | grep 2019
+392K	2019
+rm -r 2019/
+################EXTRA CREDIT I.########################
+cp -r /home/cs/232/projects/2/2019/ .
+chmod +x clean
+./clean 2019/partA -i -s
+Size Before: 
+2.0M	2019
+Do you want to delete the file (enter y/n)?:  2019/partA/coreTest/core
+y
+Deleted File:  2019/partA/coreTest/core
+Do you want to delete the file (enter y/n)?:  2019/partA/coreTest/coreTest
+y
+Deleted File:  2019/partA/coreTest/coreTest
+Do you want to delete the file (enter y/n)?:  2019/partA/goodbye/goodbye
+y
+Deleted File:  2019/partA/goodbye/goodbye
+Do you want to delete the file (enter y/n)?:  2019/partA/goodbye/#goodbye.c#
+n
+Do you want to delete the file (enter y/n)?:  2019/partA/goodbye/goodbye.c~
+n
+Do you want to delete the file (enter y/n)?:  2019/partA/hello
+n
+Do you want to delete the file (enter y/n)?:  2019/partA/#hello.c#
+y
+Deleted File:  2019/partA/#hello.c#
+Do you want to delete the file (enter y/n)?:  2019/partA/hello.c~
+n
+Number of Files deleted:  4
+Size After: 
+1.7M	2019
+du -sh * | grep 2019
+1.7M	2019
+rm -r 2019/
+cp -r /home/cs/232/projects/2/2019/ .
+jpb29@gold11:~/Project2$ exit
+exit
+
+Script done on Mon 11 Mar 2019 10:57:12 AM EDT
